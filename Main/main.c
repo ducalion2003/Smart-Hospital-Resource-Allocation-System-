@@ -32,6 +32,7 @@ int bedOccupancy[numberOfWards][20] = {0};
 
 
 void displayMenu();
+void displayLookupData();
 
 
 // Main Function
@@ -45,6 +46,7 @@ int main() {
         switch (choice) {
             case 1:
                 printf("\n[Patient Registration Selected]\n");
+                displayLookupData();
                 break;
             case 2:
                 printf("\n[Priority Sorting Selected]\n");
@@ -64,7 +66,7 @@ int main() {
     return 0;
 }
 
-// Function to display the main menu
+//main menu
 void displayMenu() {
     printf("\n=== SMART HOSPITAL MANAGEMENT SYSTEM ===\n");
     printf("1. Register New Patient\n");
@@ -73,3 +75,24 @@ void displayMenu() {
     printf("4. Save & Exit\n");
     printf("Enter your choice(1-4): ");
 }
+
+
+//Doctor Specialties & Hospital Ward tables
+void displayLookupData() {
+    printf("\n---------------- DOCTOR SPECIALTIES ----------------\n");
+    printf("ID | Specialty Name            | Base Fee   | Time/Pt\n");
+    printf("----------------------------------------------------\n");
+    for (int i = 0; i < numberOfSpecialties; i++) {
+        printf("%-2d | %-24s | LKR %7.2f | %2d mins\n",
+               i + 1, SpecialityNames[i], BaseConsultationFee[i], ConsultationTime[i]);
+    }
+
+    printf("\n------------------- HOSPITAL WARDS -------------------\n");
+    printf("ID | Ward Name                 | Daily Rate | Capacity\n");
+    printf("------------------------------------------------------\n");
+    for (int i = 0; i < numberOfWards; i++) {
+        printf("%-2d | %-24s | LKR %7.2f | %d beds\n",
+               i + 1, wardNames[i], wardRates[i], wardCapacities[i]);
+    }
+}
+
