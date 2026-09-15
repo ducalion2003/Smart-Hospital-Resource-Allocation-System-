@@ -48,6 +48,7 @@ void displayLookupData();
 void displayBedMatrix();
 void displayMenu();
 void registerPatient();
+void displayTriageList();
 
 // Main Function
 int main() {
@@ -70,7 +71,7 @@ int main() {
                 registerPatient();
                 break;
             case 3:
-                printf("\n[Priority Sorting Selected]\n");
+                displayTriageList();
                 break;
             case 4:
                 printf("\n[Analytics Selected]\n");
@@ -252,3 +253,40 @@ void registerPatient() {
     patientCount++;
 }
 
+
+//Emergency Priority Queue
+void displayTriageList() {
+    if (patientCount == 0) {
+        printf("\nNo patients registered in system yet.\n");
+        return;
+    }
+
+    int order[maxPatients];
+    for (int i = 0; i < patientCount; i++) {
+        order[i] = i;
+    }
+
+    // registration order
+    for (int i = 0; i < patientCount - 1; i++) {
+        for (int j = 0; j < patientCount - i - 1; j++) {
+            if (urgencyLevel[order[j]] < urgencyLevel[order[j + 1]]) {
+                int temp = order[j];
+                order[j] = order[j + 1];
+                order[j + 1] = temp;
+            }
+        }
+    }
+
+    printf("\n===============================================================\n");
+    printf("                  EMERGENCY TRIAGE SORTED QUEUE                 \n");
+    printf("===============================================================\n");
+    printf("Queue Pos | Patient ID | Name               | Urgency Level\n");
+    printf("---------------------------------------------------------------\n");
+    for (int i = 0; i < patientCount; i++) {
+        int idx = order[i];
+        const char *urgencyStr = (urgencyLevel[idx] == 3) ? "Level 3 (Critical)" :
+                                 (urgencyLevel[idx] == 2) ? "Level 2 (Urgent)"   : "Level 1 (Normal)";
+        printf("%-9d | PAT-%-6d | %-18s | %s\n", i + 1, patientID[idx], patientName[idx], urgencyStr);
+    }
+    printf("===============================================================\n");
+}
