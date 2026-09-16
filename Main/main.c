@@ -44,6 +44,10 @@ double finalBills[maxPatients];
 int patientCount = 0;
 int queueCounts[numberOfSpecialties] = {0};
 
+// Function Prototypes
+void loadBedStatus();
+void saveBedStatus();
+void savePatientRecordToFile(int index, double finalBill);
 void displayLookupData();
 void displayBedMatrix();
 void displayMenu();
@@ -52,6 +56,7 @@ void displayTriageList();
 
 // Main Function
 int main() {
+    loadBedStatus(); // Load saved bed occupancy matrix on startup
     int choice;
     
     do {
@@ -77,7 +82,8 @@ int main() {
                 printf("\n[Analytics Selected]\n");
                 break;
             case 5:
-                printf("\nExiting System. Goodbye!\n");
+                saveBedStatus(); // Save bed occupancy
+                printf("\nBed status saved to file. Exiting System. Goodbye!\n");
                 break;
             default:
                 printf("\nInvalid option! Please try again.\n");
@@ -85,6 +91,41 @@ int main() {
     } while (choice != 5);
 
     return 0;
+}
+
+// Load bed status file
+void loadBedStatus() {
+    FILE *fp = fopen("beds_status.txt", "r");
+    if (!fp) return; // File doesn't exist yet, start fresh
+    for (int i = 0; i < numberOfWards; i++) {
+        for (int j = 0; j < wardCapacities[i]; j++) {
+            fscanf(fp, "%d", &bedOccupancy[i][j]);
+        }
+    }
+    fclose(fp);
+}
+
+// Save bed status file
+void saveBedStatus() {
+    FILE *fp = fopen("beds_status.txt", "w");
+    if (!fp) return;
+    for (int i = 0; i < numberOfWards; i++) {
+        for (int j = 0; j < wardCapacities[i]; j++) {
+            fprintf(fp, "%d ", bedOccupancy[i][j]);
+        }
+        fprintf(fp, "\n");
+    }
+    fclose(fp);
+}
+
+// Save patient record log file
+void savePatientRecordToFile(int index, double finalBill) {
+    FILE *fp = fopen("patient_records.txt", "a");
+    if (!fp) return;
+    fprintf(fp, "PAT-%d | %s | Age: %d | Urgency: %d | Bill: LKR %.2f\n",
+            patientID[index], patientName[index], patientAge[index],
+            urgencyLevel[index], finalBill);
+    fclose(fp);
 }
 
 // Main Menu
@@ -176,10 +217,9 @@ void registerPatient() {
         int wIdx = wardID[idNumber] - 1;
         int bedFound = 0;
         
-        // Find and assign first available bed in ward
         for (int b = 0; b < wardCapacities[wIdx]; b++) {
             if (bedOccupancy[wIdx][b] == 0) {
-                bedOccupancy[wIdx][b] = 1; // Mark bed occupied
+                bedOccupancy[wIdx][b] = 1;
                 allocatedBedNumber[idNumber] = b + 1;
                 bedFound = 1;
                 break;
@@ -250,11 +290,13 @@ void registerPatient() {
            urgencyLevel[idNumber] == 3 ? "(Immediate Attention)" : "");
     printf("==================================================\n");
 
+    savePatientRecordToFile(idNumber, finalAmount); // Auto save record to file
+    saveBedStatus();                                // Auto save updated bed state
+
     patientCount++;
 }
 
-
-//Emergency Priority Queue
+// Emergency Priority Queue
 void displayTriageList() {
     if (patientCount == 0) {
         printf("\nNo patients registered in system yet.\n");
@@ -266,7 +308,6 @@ void displayTriageList() {
         order[i] = i;
     }
 
-    // registration order
     for (int i = 0; i < patientCount - 1; i++) {
         for (int j = 0; j < patientCount - i - 1; j++) {
             if (urgencyLevel[order[j]] < urgencyLevel[order[j + 1]]) {
