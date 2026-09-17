@@ -57,7 +57,7 @@ void generateAnalyticsReport();
 
 // Main Function
 int main() {
-    loadBedStatus(); // Load saved bed occupancy matrix on startup
+    loadBedStatus();
     int choice;
     
     do {
@@ -292,8 +292,8 @@ void registerPatient() {
            urgencyLevel[idNumber] == 3 ? "(Immediate Attention)" : "");
     printf("==================================================\n");
 
-    savePatientRecordToFile(idNumber, finalAmount); // Auto save record to file
-    saveBedStatus();                                // Auto save updated bed state
+    savePatientRecordToFile(idNumber, finalAmount);
+    saveBedStatus();                                
 
     patientCount++;
 }
