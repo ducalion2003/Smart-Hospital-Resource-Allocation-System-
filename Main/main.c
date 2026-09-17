@@ -53,6 +53,7 @@ void displayBedMatrix();
 void displayMenu();
 void registerPatient();
 void displayTriageList();
+void generateAnalyticsReport();
 
 // Main Function
 int main() {
@@ -65,7 +66,7 @@ int main() {
             while (getchar() != '\n');
             continue;
         }
-        getchar(); // Clear newline buffer
+        getchar();
         
         switch (choice) {
             case 1:
@@ -79,10 +80,10 @@ int main() {
                 displayTriageList();
                 break;
             case 4:
-                printf("\n[Analytics Selected]\n");
+                generateAnalyticsReport();
                 break;
             case 5:
-                saveBedStatus(); // Save bed occupancy
+                saveBedStatus();
                 printf("\nBed status saved to file. Exiting System. Goodbye!\n");
                 break;
             default:
@@ -93,10 +94,10 @@ int main() {
     return 0;
 }
 
-// Load bed status file
+// Loads bed occupancy status file
 void loadBedStatus() {
     FILE *fp = fopen("beds_status.txt", "r");
-    if (!fp) return; // File doesn't exist yet, start fresh
+    if (!fp) return; 
     for (int i = 0; i < numberOfWards; i++) {
         for (int j = 0; j < wardCapacities[i]; j++) {
             fscanf(fp, "%d", &bedOccupancy[i][j]);
@@ -105,7 +106,7 @@ void loadBedStatus() {
     fclose(fp);
 }
 
-// Save bed status file
+// Saves bed occupancy status file
 void saveBedStatus() {
     FILE *fp = fopen("beds_status.txt", "w");
     if (!fp) return;
@@ -118,7 +119,7 @@ void saveBedStatus() {
     fclose(fp);
 }
 
-// Save patient record log file
+// Saves patient records into permanent log file
 void savePatientRecordToFile(int index, double finalBill) {
     FILE *fp = fopen("patient_records.txt", "a");
     if (!fp) return;
@@ -217,9 +218,10 @@ void registerPatient() {
         int wIdx = wardID[idNumber] - 1;
         int bedFound = 0;
         
+        // Find and assign first available bed in ward
         for (int b = 0; b < wardCapacities[wIdx]; b++) {
             if (bedOccupancy[wIdx][b] == 0) {
-                bedOccupancy[wIdx][b] = 1;
+                bedOccupancy[wIdx][b] = 1; // Mark bed occupied
                 allocatedBedNumber[idNumber] = b + 1;
                 bedFound = 1;
                 break;
@@ -330,4 +332,61 @@ void displayTriageList() {
         printf("%-9d | PAT-%-6d | %-18s | %s\n", i + 1, patientID[idx], patientName[idx], urgencyStr);
     }
     printf("===============================================================\n");
+}
+
+// Performance & Analytics Report
+void generateAnalyticsReport() {
+    if (patientCount == 0) {
+        printf("\nNo data available to generate analytics.\n");
+        return;
+    }
+
+    int n1 = 0, n2 = 0, n3 = 0;
+    double totalRevenue = 0.0, totalDiscounts = 0.0;
+    int highestIdx = 0;
+
+    for (int i = 0; i < patientCount; i++) {
+        if (urgencyLevel[i] == 1) n1++;
+        else if (urgencyLevel[i] == 2) n2++;
+        else if (urgencyLevel[i] == 3) n3++;
+
+        int sIdx = specialtyID[i] - 1;
+        double baseFee = BaseConsultationFee[sIdx];
+        double surcharge = (urgencyLevel[i] == 2) ? baseFee * 0.20 : ((urgencyLevel[i] == 3) ? baseFee * 0.50 : 0.0);
+        double wardCost = (isAdmitted[i] == 1 && wardID[i] > 0) ? daysAdmitted[i] * wardRates[wardID[i] - 1] : 0.0;
+        double gross = baseFee + surcharge + wardCost;
+        double disc = (patientAge[i] < 5 || patientAge[i] > 65) ? gross * 0.15 : 0.0;
+
+        totalRevenue += finalBills[i];
+        totalDiscounts += disc;
+
+        if (finalBills[i] > finalBills[highestIdx]) {
+            highestIdx = i;
+        }
+    }
+
+    printf("\n======================================================\n");
+    printf("            PERFORMANCE REPORTS & ANALYTICS            \n");
+    printf("======================================================\n");
+    printf("Total Patients Registered : %d\n", patientCount);
+    printf("  - Level 1 (Normal)     : %d\n", n1);
+    printf("  - Level 2 (Urgent)     : %d\n", n2);
+    printf("  - Level 3 (Critical)   : %d\n", n3);
+    printf("------------------------------------------------------\n");
+    printf("Total Revenue Earned      : LKR %.2f\n", totalRevenue);
+    printf("Total Discounts Granted   : LKR %.2f\n", totalDiscounts);
+    printf("------------------------------------------------------\n");
+    printf("Bed Occupancy per Ward:\n");
+    for (int w = 0; w < numberOfWards; w++) {
+        int occupiedCount = 0;
+        for (int b = 0; b < wardCapacities[w]; b++) {
+            if (bedOccupancy[w][b] == 1) occupiedCount++;
+        }
+        double percentage = ((double)occupiedCount / wardCapacities[w]) * 100.0;
+        printf("  - %-25s: %d/%d occupied (%.1f%%)\n", wardNames[w], occupiedCount, wardCapacities[w], percentage);
+    }
+    printf("------------------------------------------------------\n");
+    printf("Highest-Paying Patient    : %s (PAT-%d)\n", patientName[highestIdx], patientID[highestIdx]);
+    printf("Highest Bill Amount       : LKR %.2f\n", finalBills[highestIdx]);
+    printf("======================================================\n");
 }
