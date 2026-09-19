@@ -5,7 +5,7 @@
 #define numberOfSpecialties 4
 #define numberOfWards 4
 
-// Doctor Specialties Data Table
+// Doctor Specialties
 const char SpecialityNames[numberOfSpecialties][30] = {
     "General Practice (OPD)",
     "Paediatrics",
@@ -16,7 +16,7 @@ const double BaseConsultationFee[numberOfSpecialties] = {1500.00, 2500.00, 4500.
 const int ConsultationTime[numberOfSpecialties] = {15, 20, 30, 30};
 const int DailyPatientCap[numberOfSpecialties] = {30, 20, 12, 10};
 
-// Hospital Wards Data Table
+// Hospital Wards
 const char wardNames[numberOfWards][30] = {
     "General Ward",
     "Paediatric Ward",
@@ -26,7 +26,7 @@ const char wardNames[numberOfWards][30] = {
 const double wardRates[numberOfWards] = {3000.00, 6000.00, 12000.00, 25000.00};
 const int wardCapacities[numberOfWards] = {20, 10, 10, 5};
 
-// 2D Bed Occupancy (0 = Available, 1 = Occupied)
+// 2D Bed Occupancy
 int bedOccupancy[numberOfWards][20] = {0};
 
 // Arrays Patient Records
@@ -44,7 +44,7 @@ double finalBills[maxPatients];
 int patientCount = 0;
 int queueCounts[numberOfSpecialties] = {0};
 
-// Function Prototypes
+// Prototypes
 void loadBedStatus();
 void saveBedStatus();
 void savePatientRecordToFile(int index, double finalBill);
@@ -55,7 +55,7 @@ void registerPatient();
 void displayTriageList();
 void generateAnalyticsReport();
 
-// Main Function
+// Main
 int main() {
     loadBedStatus();
     int choice;
@@ -94,7 +94,7 @@ int main() {
     return 0;
 }
 
-// Loads bed occupancy status file
+// File management part
 void loadBedStatus() {
     FILE *fp = fopen("beds_status.txt", "r");
     if (!fp) return; 
@@ -106,7 +106,7 @@ void loadBedStatus() {
     fclose(fp);
 }
 
-// Saves bed occupancy status file
+
 void saveBedStatus() {
     FILE *fp = fopen("beds_status.txt", "w");
     if (!fp) return;
@@ -119,7 +119,6 @@ void saveBedStatus() {
     fclose(fp);
 }
 
-// Saves patient records into permanent log file
 void savePatientRecordToFile(int index, double finalBill) {
     FILE *fp = fopen("patient_records.txt", "a");
     if (!fp) return;
@@ -140,26 +139,24 @@ void displayMenu() {
     printf("Enter your choice(1-5): ");
 }
 
-// Ward & Specialty Lookup Tables
+// Ward & Specialty
 void displayLookupData() {
     printf("\n---------------- DOCTOR SPECIALTIES ----------------\n");
     printf("ID | Specialty Name            | Base Fee   | Time/Pt\n");
     printf("----------------------------------------------------\n");
     for (int i = 0; i < numberOfSpecialties; i++) {
-        printf("%-2d | %-24s | LKR %7.2f | %2d mins\n",
-               i + 1, SpecialityNames[i], BaseConsultationFee[i], ConsultationTime[i]);
+        printf("%-2d | %-24s | LKR %7.2f | %2d mins\n", i+1 , SpecialityNames[i], BaseConsultationFee[i], ConsultationTime[i]);
     }
 
     printf("\n------------------- HOSPITAL WARDS -------------------\n");
     printf("ID | Ward Name                 | Daily Rate | Capacity\n");
     printf("------------------------------------------------------\n");
     for (int i = 0; i < numberOfWards; i++) {
-        printf("%-2d | %-24s | LKR %7.2f | %d beds\n",
-               i + 1, wardNames[i], wardRates[i], wardCapacities[i]);
+        printf("%-2d | %-24s | LKR %7.2f | %d beds\n", i+1 , wardNames[i], wardRates[i], wardCapacities[i]);
     }
 }
 
-// Display Bed Status
+//Bed Status
 void displayBedMatrix() {
     printf("\n---------------- BED OCCUPANCY STATUS ----------------\n");
     for (int w = 0; w < numberOfWards; w++) {
@@ -218,7 +215,7 @@ void registerPatient() {
         int wIdx = wardID[idNumber] - 1;
         int bedFound = 0;
         
-        // Find and assign first available bed in ward
+       
         for (int b = 0; b < wardCapacities[wIdx]; b++) {
             if (bedOccupancy[wIdx][b] == 0) {
                 bedOccupancy[wIdx][b] = 1; // Mark bed occupied
@@ -265,8 +262,7 @@ void registerPatient() {
     printf("==================================================\n");
     printf("Patient ID             : PAT-%d\n", patientID[idNumber]);
     printf("Patient Name           : %s\n", patientName[idNumber]);
-    printf("Age                    : %d Years %s\n", patientAge[idNumber],
-           (patientAge[idNumber] < 5 || patientAge[idNumber] > 65) ? "(15% Subsidy Eligible)" : "");
+    printf("Age                    : %d Years %s\n", patientAge[idNumber], (patientAge[idNumber] < 5 || patientAge[idNumber] > 65) ? "(15% Subsidy Eligible)" : "");
     printf("Specialty              : %s\n", SpecialityNames[sIdx]);
     
     if (isAdmitted[idNumber] == 1 && allocatedBedNumber[idNumber] != -1) {
@@ -277,19 +273,15 @@ void registerPatient() {
         printf("Assigned Ward          : Outpatient (OPD)\n");
     }
 
-    printf("Urgency Level          : Level %d (%s)\n", urgencyLevel[idNumber],
-           urgencyLevel[idNumber] == 1 ? "Normal" : (urgencyLevel[idNumber] == 2 ? "Urgent" : "Critical"));
+    printf("Urgency Level          : Level %d (%s)\n", urgencyLevel[idNumber], urgencyLevel[idNumber] == 1 ? "Normal" : (urgencyLevel[idNumber] == 2 ? "Urgent" : "Critical"));
     printf("Base Consultation Fee  : LKR %10.2f\n", baseFee);
-    printf("Emergency Surcharge    : LKR %10.2f (%s)\n", surcharge,
-           urgencyLevel[idNumber] == 1 ? "0%" : (urgencyLevel[idNumber] == 2 ? "20%" : "50%"));
+    printf("Emergency Surcharge    : LKR %10.2f (%s)\n", surcharge, urgencyLevel[idNumber] == 1 ? "0%" : (urgencyLevel[idNumber] == 2 ? "20%" : "50%"));
     printf("Ward Stay Cost (%d Days): LKR %10.2f\n", daysAdmitted[idNumber], wardCost);
     printf("Gross Total Bill       : LKR %10.2f\n", grossTotal);
-    printf("Age Subsidy Discount   : LKR %10.2f (%s)\n", -discount,
-           (patientAge[idNumber] < 5 || patientAge[idNumber] > 65) ? "15%" : "0%");
+    printf("Age Subsidy Discount   : LKR %10.2f (%s)\n", -discount, (patientAge[idNumber] < 5 || patientAge[idNumber] > 65) ? "15%" : "0%");
     printf("--------------------------------------------------\n");
     printf("Final Payable Amount   : LKR %10.2f\n", finalAmount);
-    printf("Estimated Waiting Time : %.2f mins %s\n", waitTime,
-           urgencyLevel[idNumber] == 3 ? "(Immediate Attention)" : "");
+    printf("Estimated Waiting Time : %.2f mins %s\n", waitTime, urgencyLevel[idNumber] == 3 ? "(Immediate Attention)" : "");
     printf("==================================================\n");
 
     savePatientRecordToFile(idNumber, finalAmount);
