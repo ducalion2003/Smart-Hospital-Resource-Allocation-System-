@@ -141,4 +141,4 @@ Estimated Waiting Time : 0.00 mins (Immediate Attention)
 
 ## 👤 Author
 
-**Chamod** — BSc (General) Degree, First Year
+**Chamod Madushan** — BSc (General) Degree, First Year
